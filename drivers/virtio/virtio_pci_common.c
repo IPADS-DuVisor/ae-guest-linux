@@ -102,6 +102,8 @@ static irqreturn_t vp_vring_interrupt(int irq, void *opaque)
 	return ret;
 }
 
+#define PCI_ISR_SM
+uint8_t *pci_isr_sm = NULL;
 /* A small wrapper to also acknowledge the interrupt when it's handled.
  * I really need an EIO hook for the vring so I can ack the interrupt once we
  * know that we'll be handling the IRQ but before we invoke the callback since
@@ -118,7 +120,15 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
 
 	/* reading the ISR has the effect of also clearing it so it's very
 	 * important to save off the value. */
+#ifndef PCI_ISR_SM
 	isr = ioread8(vp_dev->isr);
+#else
+    /* index + 2 is due to qemu VIRTIO_BLK_ID is 2 */
+	isr = atomic_xchg((atomic_t *)(pci_isr_sm +
+            (vp_dev->vdev.index + 2) * sizeof(uint64_t) / sizeof(uint8_t)), 0);
+	atomic_set((atomic_t *)(pci_isr_sm + PAGE_SIZE / 2 / sizeof(uint8_t) +
+            (vp_dev->vdev.index + 2) * sizeof(uint64_t) / sizeof(uint8_t)), 1);
+#endif
 
 	/* It's definitely not us if the ISR was not high */
 	if (!isr)
@@ -549,6 +559,9 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	struct virtio_pci_device *vp_dev, *reg_dev = NULL;
 	int rc;
 
+    if (unlikely(!pci_isr_sm)) {
+        pci_isr_sm = ioremap(18UL << 30, PAGE_SIZE);
+    }
 	/* allocate our structure and fill it out */
 	vp_dev = kzalloc(sizeof(struct virtio_pci_device), GFP_KERNEL);
 	if (!vp_dev)
