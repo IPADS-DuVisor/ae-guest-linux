@@ -227,6 +227,7 @@ static const struct irq_domain_ops plic_irqdomain_ops = {
  * that source ID back to the same claim register.  This automatically enables
  * and disables the interrupt, so there's nothing else to do.
  */
+static unsigned long irq_cnt = 0;
 static void plic_handle_irq(struct irq_desc *desc)
 {
 	struct plic_handler *handler = this_cpu_ptr(&plic_handlers);
@@ -238,7 +239,13 @@ static void plic_handle_irq(struct irq_desc *desc)
 
 	chained_irq_enter(chip, desc);
 
+    //if (irq_cnt++ % 1 == 0) {
+    //    printk("%s:%d irq_cnt %lu\n", __func__, __LINE__, irq_cnt);
+    //}
 	while ((hwirq = readl(claim))) {
+        //if (hwirq >= 33 && ++irq_cnt % 100 == 0) {
+        //    printk("%s:%d irq_cnt %lu, hwirq %lu\n", __func__, __LINE__, irq_cnt, hwirq);
+        //}
 		int err = generic_handle_domain_irq(handler->priv->irqdomain,
 						    hwirq);
 		if (unlikely(err))
@@ -277,6 +284,7 @@ static int plic_starting_cpu(unsigned int cpu)
 	return 0;
 }
 
+#define VINTERRUPTS_IRQ_OFFSET 0x10
 static int __init plic_init(struct device_node *node,
 		struct device_node *parent)
 {
@@ -371,7 +379,8 @@ done:
 #if 0
 		for (hwirq = 1; hwirq <= nr_irqs; hwirq++)
 #else
-		for (hwirq = 1 + 0x80; hwirq <= nr_irqs + 0x80; hwirq++)
+		for (hwirq = 1 + VINTERRUPTS_IRQ_OFFSET;
+                hwirq <= nr_irqs + VINTERRUPTS_IRQ_OFFSET; hwirq++)
 #endif
 			plic_toggle(handler, hwirq, 0);
 		nr_handlers++;

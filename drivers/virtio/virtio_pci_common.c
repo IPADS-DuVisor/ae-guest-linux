@@ -103,7 +103,10 @@ static irqreturn_t vp_vring_interrupt(int irq, void *opaque)
 }
 
 #define PCI_ISR_SM
+
+#ifdef PCI_ISR_SM
 uint8_t *pci_isr_sm = NULL;
+#endif
 /* A small wrapper to also acknowledge the interrupt when it's handled.
  * I really need an EIO hook for the vring so I can ack the interrupt once we
  * know that we'll be handling the IRQ but before we invoke the callback since
@@ -123,11 +126,10 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
 #ifndef PCI_ISR_SM
 	isr = ioread8(vp_dev->isr);
 #else
-    /* index + 2 is due to qemu VIRTIO_BLK_ID is 2 */
 	isr = atomic_xchg((atomic_t *)(pci_isr_sm +
-            (vp_dev->vdev.index + 2) * sizeof(uint64_t) / sizeof(uint8_t)), 0);
+            vp_dev->vdev.index * sizeof(uint64_t) / sizeof(uint8_t)), 0);
 	atomic_set((atomic_t *)(pci_isr_sm + PAGE_SIZE / 2 / sizeof(uint8_t) +
-            (vp_dev->vdev.index + 2) * sizeof(uint64_t) / sizeof(uint8_t)), 1);
+            vp_dev->vdev.index * sizeof(uint64_t) / sizeof(uint8_t)), 1);
 #endif
 
 	/* It's definitely not us if the ISR was not high */

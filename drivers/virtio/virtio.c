@@ -419,6 +419,7 @@ int register_virtio_device(struct virtio_device *dev)
 
 	dev->index = err;
 	dev_set_name(&dev->dev, "virtio%u", dev->index);
+    printk("%s:%d index %d\n", __func__, __LINE__, dev->index);
 
 	err = virtio_device_of_init(dev);
 	if (err)
