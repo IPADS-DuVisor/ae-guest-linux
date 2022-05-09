@@ -284,7 +284,7 @@ static int plic_starting_cpu(unsigned int cpu)
 	return 0;
 }
 
-#define VINTERRUPTS_IRQ_OFFSET 0x10
+#define VINTERRUPTS_IRQ_OFFSET 10
 static int __init plic_init(struct device_node *node,
 		struct device_node *parent)
 {
