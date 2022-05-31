@@ -561,9 +561,11 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 	struct virtio_pci_device *vp_dev, *reg_dev = NULL;
 	int rc;
 
+#ifdef PCI_ISR_SM
     if (unlikely(!pci_isr_sm)) {
         pci_isr_sm = ioremap(18UL << 30, PAGE_SIZE);
     }
+#endif
 	/* allocate our structure and fill it out */
 	vp_dev = kzalloc(sizeof(struct virtio_pci_device), GFP_KERNEL);
 	if (!vp_dev)
