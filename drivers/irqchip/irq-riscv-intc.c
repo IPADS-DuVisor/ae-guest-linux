@@ -17,11 +17,14 @@
 #include <linux/of.h>
 #include <linux/smp.h>
 
+#include <asm/sbi.h>
+
 static struct irq_domain *intc_domain;
 
 static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
 {
 	unsigned long cause = regs->cause & ~CAUSE_IRQ_FLAG;
+    int cpuid;
 
 	if (unlikely(cause >= BITS_PER_LONG))
 		panic("unexpected interrupt cause");
@@ -29,6 +32,12 @@ static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
 	switch (cause) {
 #ifdef CONFIG_SMP
 	case RV_IRQ_SOFT:
+#if 1
+        cpuid = csr_read(CSR_VCPUID) - 1;
+        csr_clear(CSR_VIPI0, 1 << (cpuid + 1));
+        //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+        //        0, 0, 2, csr_read(CSR_SIP), cpuid);
+#endif
 		/*
 		 * We only use software interrupts to pass IPIs, so if a
 		 * non-SMP system gets one, then we don't know what to do.

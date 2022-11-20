@@ -146,6 +146,13 @@
 				 (_AC(1, UL) << IRQ_S_TIMER) | \
 				 (_AC(1, UL) << IRQ_S_EXT))
 
+/* posted vipi CSRs */
+#define CSR_VCPUID      0x482
+#define CSR_VIPI0       0x483
+#define CSR_VIPI1       0x484
+#define CSR_VIPI2       0x485
+#define CSR_VIPI3       0x486
+
 /* symbolic CSR names: */
 #define CSR_CYCLE		0xc00
 #define CSR_TIME		0xc01

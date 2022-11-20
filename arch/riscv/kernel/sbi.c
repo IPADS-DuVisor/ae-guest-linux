@@ -165,6 +165,7 @@ static int __sbi_send_ipi_v01(const struct cpumask *cpu_mask)
 		cpu_mask = cpu_online_mask;
 	hart_mask = __sbi_v01_cpumask_to_hartmask(cpu_mask);
 
+    pr_err("%s:%d ---\n", __func__, __LINE__);
 	sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0, (unsigned long)(&hart_mask),
 		  0, 0, 0, 0, 0);
 	return 0;
@@ -257,6 +258,13 @@ static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 	if (!cpu_mask || cpumask_empty(cpu_mask))
 		cpu_mask = cpu_online_mask;
 
+#if 1
+    for_each_cpu(cpuid, cpu_mask) {
+        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
+        //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+        //        0, 0, 1, csr_read(CSR_VCPUID) - 1, cpuid);
+    }
+#else
 	for_each_cpu(cpuid, cpu_mask) {
 		hartid = cpuid_to_hartid_map(cpuid);
 		if (hmask) {
@@ -289,6 +297,7 @@ static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 		if (ret.error)
 			goto ecall_failed;
 	}
+#endif
 
 	return 0;
 

@@ -170,6 +170,9 @@ asmlinkage __visible void smp_callin(void)
 	update_siblings_masks(curr_cpuid);
 	set_cpu_online(curr_cpuid, 1);
 
+    csr_write(CSR_VCPUID, curr_cpuid + 1);
+    //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+    //        0, 0, __LINE__, csr_read(CSR_VCPUID), curr_cpuid);
 	/*
 	 * Remote TLB flushes are ignored while the CPU is offline, so emit
 	 * a local TLB flush right now just in case.

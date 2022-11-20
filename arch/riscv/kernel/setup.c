@@ -295,6 +295,9 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	riscv_fill_hwcap();
+    csr_write(CSR_VCPUID, 0 + 1);
+    //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+    //        0, 0, __LINE__, csr_read(CSR_VCPUID), 0);
 }
 
 static int __init topology_init(void)
