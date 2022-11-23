@@ -33,8 +33,13 @@ static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
 #ifdef CONFIG_SMP
 	case RV_IRQ_SOFT:
 #if 1
+#ifdef CONFIG_FIRESIM
+        cpuid = rdvcpuid() - 1;
+        clrvipi0(1 << (cpuid + 1));
+#else
         cpuid = csr_read(CSR_VCPUID) - 1;
         csr_clear(CSR_VIPI0, 1 << (cpuid + 1));
+#endif
         //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
         //        0, 0, 2, csr_read(CSR_SIP), cpuid);
 #endif

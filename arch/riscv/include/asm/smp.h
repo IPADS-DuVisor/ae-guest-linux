@@ -101,4 +101,76 @@ static inline bool cpu_has_hotplug(unsigned int cpu)
 }
 #endif
 
+#ifdef CONFIG_FIRESIM
+static inline
+unsigned long rdvcpuid(void) {
+	register long vcpu_id asm("a0");
+
+	asm volatile ("\n"
+			".option push\n"
+			".option norvc\n"
+
+			/* rdvcpuid */
+			".word 0xf8102577\n"
+
+			".option pop"
+			: "=r"(vcpu_id)
+			:
+			: "memory");
+
+    return vcpu_id;
+}
+
+static inline
+void wrvcpuid(unsigned long val) {
+	register long vcpu_id asm("a0") = val;
+
+	asm volatile ("\n"
+			".option push\n"
+			".option norvc\n"
+
+			/* wrvcpuid */
+			".word 0xf8a01077\n"
+
+			".option pop"
+			:
+			: "r"(vcpu_id)
+			: "memory");
+}
+
+static inline 
+void setvipi0(unsigned long val) {
+	register long vipi_id asm("a0") = val;
+
+	asm volatile ("\n"
+			".option push\n"
+			".option norvc\n"
+
+			/* set_vipi0 */
+			".word 0xc8a03077\n"
+
+			".option pop"
+			:
+			: "r"(vipi_id)
+			: "memory");
+}
+
+static inline 
+void clrvipi0(unsigned long val) {
+	register long vipi_id asm("a0") = val;
+
+	asm volatile ("\n"
+			".option push\n"
+			".option norvc\n"
+
+			/* clr_vipi0 */
+			".word 0xc8a02077\n"
+
+			".option pop"
+			:
+			: "r"(vipi_id)
+			: "memory");
+}
+#endif
+
 #endif /* _ASM_RISCV_SMP_H */

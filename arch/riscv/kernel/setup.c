@@ -295,7 +295,11 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	riscv_fill_hwcap();
+#ifdef CONFIG_FIRESIM
+    wrvcpuid(0 + 1);
+#else
     csr_write(CSR_VCPUID, 0 + 1);
+#endif
     //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
     //        0, 0, __LINE__, csr_read(CSR_VCPUID), 0);
 }
