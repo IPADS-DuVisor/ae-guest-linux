@@ -101,6 +101,7 @@ static inline bool cpu_has_hotplug(unsigned int cpu)
 }
 #endif
 
+#ifdef CONFIG_VIPI
 #include <asm/csr.h>
 
 static inline
@@ -189,5 +190,6 @@ void clrvipi0(unsigned long val) {
     csr_clear(CSR_VIPI0, val);
 #endif
 }
+#endif
 
 #endif /* _ASM_RISCV_SMP_H */

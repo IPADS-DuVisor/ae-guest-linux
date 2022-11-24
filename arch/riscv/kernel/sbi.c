@@ -161,7 +161,7 @@ static void __sbi_set_timer_v01(uint64_t stime_value)
 
 static int __sbi_send_ipi_v01(const struct cpumask *cpu_mask)
 {
-#if 1
+#ifdef CONFIG_VIPI
 	unsigned long cpuid;
     for_each_cpu(cpuid, cpu_mask) {
         setvipi0(1 << (cpuid + 1));
@@ -261,7 +261,7 @@ static void __sbi_set_timer_v02(uint64_t stime_value)
 
 static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 {
-#if 1
+#ifdef CONFIG_VIPI
     unsigned long cpuid;
     for_each_cpu(cpuid, cpu_mask) {
         setvipi0(1 << (cpuid + 1));
