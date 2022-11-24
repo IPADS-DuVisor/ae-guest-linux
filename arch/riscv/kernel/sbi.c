@@ -164,13 +164,9 @@ static int __sbi_send_ipi_v01(const struct cpumask *cpu_mask)
 #if 1
 	unsigned long cpuid;
     for_each_cpu(cpuid, cpu_mask) {
-#ifdef CONFIG_FIRESIM
         setvipi0(1 << (cpuid + 1));
-#else
-        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
-#endif
-        //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
-        //        0, 0, __LINE__, csr_read(CSR_VCPUID) - 1, cpuid);
+        //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
+        //        __LINE__, rdvcpuid() - 1, cpuid, 0, 0, 0);
     }
 #else
 	unsigned long hart_mask;
@@ -268,11 +264,7 @@ static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 #if 1
     unsigned long cpuid;
     for_each_cpu(cpuid, cpu_mask) {
-#ifdef CONFIG_FIRESIM
         setvipi0(1 << (cpuid + 1));
-#else
-        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
-#endif
         /* just to prevent false using sbiv02 */
         sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
                 0, 0, __LINE__, csr_read(CSR_VCPUID) - 1, cpuid);
