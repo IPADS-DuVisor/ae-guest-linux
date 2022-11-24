@@ -190,6 +190,29 @@ void clrvipi0(unsigned long val) {
     csr_clear(CSR_VIPI0, val);
 #endif
 }
+
+static inline
+unsigned long rdvipi0(void) {
+#ifdef CONFIG_FIRESIM
+	register long vipi_id asm("a0");
+
+	asm volatile ("\n"
+			".option push\n"
+			".option norvc\n"
+
+			/* rdvipi0 */
+			".word 0xc8101577\n"
+
+			".option pop"
+			: "=r"(vipi_id)
+			:
+			: "memory");
+
+    return vipi_id;
+#else
+    return csr_read(CSR_VIPI0);
+#endif
+}
 #endif
 
 #endif /* _ASM_RISCV_SMP_H */

@@ -36,7 +36,7 @@ static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
         cpuid = rdvcpuid() - 1;
         clrvipi0(1 << (cpuid + 1));
         //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
-        //        __LINE__, cpuid, 0, 0, 0, 0);
+        //        __LINE__, cpuid, rdvipi0(), 0, 0, 0);
 #endif
 		/*
 		 * We only use software interrupts to pass IPIs, so if a
