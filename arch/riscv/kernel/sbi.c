@@ -137,7 +137,9 @@ EXPORT_SYMBOL(sbi_shutdown);
  */
 void sbi_clear_ipi(void)
 {
+#if 0
 	sbi_ecall(SBI_EXT_0_1_CLEAR_IPI, 0, 0, 0, 0, 0, 0, 0);
+#endif
 }
 EXPORT_SYMBOL(sbi_clear_ipi);
 
@@ -159,15 +161,27 @@ static void __sbi_set_timer_v01(uint64_t stime_value)
 
 static int __sbi_send_ipi_v01(const struct cpumask *cpu_mask)
 {
+#if 1
+	unsigned long cpuid;
+    for_each_cpu(cpuid, cpu_mask) {
+#ifdef CONFIG_FIRESIM
+        setvipi0(1 << (cpuid + 1));
+#else
+        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
+#endif
+        //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+        //        0, 0, __LINE__, csr_read(CSR_VCPUID) - 1, cpuid);
+    }
+#else
 	unsigned long hart_mask;
 
 	if (!cpu_mask || cpumask_empty(cpu_mask))
 		cpu_mask = cpu_online_mask;
 	hart_mask = __sbi_v01_cpumask_to_hartmask(cpu_mask);
 
-    pr_err("%s:%d ---\n", __func__, __LINE__);
 	sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0, (unsigned long)(&hart_mask),
 		  0, 0, 0, 0, 0);
+#endif
 	return 0;
 }
 
@@ -251,6 +265,20 @@ static void __sbi_set_timer_v02(uint64_t stime_value)
 
 static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 {
+#if 1
+    unsigned long cpuid;
+    for_each_cpu(cpuid, cpu_mask) {
+#ifdef CONFIG_FIRESIM
+        setvipi0(1 << (cpuid + 1));
+#else
+        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
+#endif
+        /* just to prevent false using sbiv02 */
+        sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
+                0, 0, __LINE__, csr_read(CSR_VCPUID) - 1, cpuid);
+    }
+	return 0;
+#else
 	unsigned long hartid, cpuid, hmask = 0, hbase = 0, htop = 0;
 	struct sbiret ret = {0};
 	int result;
@@ -258,17 +286,6 @@ static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 	if (!cpu_mask || cpumask_empty(cpu_mask))
 		cpu_mask = cpu_online_mask;
 
-#if 1
-    for_each_cpu(cpuid, cpu_mask) {
-#ifdef CONFIG_FIRESIM
-        setvipi0(1 << (cpuid + 1));
-#else
-        csr_set(CSR_VIPI0, 1 << (cpuid + 1));
-#endif
-        //sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, 0,
-        //        0, 0, 1, csr_read(CSR_VCPUID) - 1, cpuid);
-    }
-#else
 	for_each_cpu(cpuid, cpu_mask) {
 		hartid = cpuid_to_hartid_map(cpuid);
 		if (hmask) {
@@ -301,7 +318,6 @@ static int __sbi_send_ipi_v02(const struct cpumask *cpu_mask)
 		if (ret.error)
 			goto ecall_failed;
 	}
-#endif
 
 	return 0;
 
@@ -310,6 +326,7 @@ ecall_failed:
 	pr_err("%s: hbase = [%lu] hmask = [0x%lx] failed (error [%d])\n",
 	       __func__, hbase, hmask, result);
 	return result;
+#endif
 }
 
 static int __sbi_rfence_v02_call(unsigned long fid, unsigned long hmask,
