@@ -171,7 +171,8 @@ void setvipi0(unsigned long val) {
 static inline 
 void clrvipi0(unsigned long val) {
 #ifdef CONFIG_FIRESIM
-	register long vipi_id asm("a0") = val;
+    /* FIXME: why ~val? */
+	register long vipi_id asm("a0") = ~val;
 
 	asm volatile ("\n"
 			".option push\n"
