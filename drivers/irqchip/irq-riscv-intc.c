@@ -21,6 +21,11 @@
 
 static struct irq_domain *intc_domain;
 
+bool virq_stat = false;
+EXPORT_SYMBOL(virq_stat);
+unsigned long virq_cnt[3] = {0};
+EXPORT_SYMBOL(virq_cnt);
+
 static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
 {
 	unsigned long cause = regs->cause & ~CAUSE_IRQ_FLAG;
@@ -29,6 +34,21 @@ static asmlinkage void riscv_intc_irq(struct pt_regs *regs)
 	if (unlikely(cause >= BITS_PER_LONG))
 		panic("unexpected interrupt cause");
 
+    if (virq_stat) {
+        switch (cause) {
+            case RV_IRQ_SOFT:
+                virq_cnt[0]++;
+                break;
+            case RV_IRQ_TIMER:
+                virq_cnt[1]++;
+                break;
+            case RV_IRQ_EXT:
+                virq_cnt[2]++;
+                break;
+            default:
+                break;
+        }
+    }
 	switch (cause) {
 #ifdef CONFIG_SMP
 	case RV_IRQ_SOFT:
