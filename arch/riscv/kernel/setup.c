@@ -298,8 +298,8 @@ void __init setup_arch(char **cmdline_p)
 
 #ifdef CONFIG_VIPI
     wrvcpuid(0 + 1);
-    sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
-            __LINE__, rdvcpuid(), 0, 0, 0, 0);
+    //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
+    //        __LINE__, rdvcpuid(), 0, 0, 0, 0);
 #endif
 }
 

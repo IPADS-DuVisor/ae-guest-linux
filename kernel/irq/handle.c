@@ -229,6 +229,7 @@ EXPORT_SYMBOL(test_vplic);
 volatile unsigned long test_vplic_num = 0;
 EXPORT_SYMBOL(test_vplic_num);
 int *vplic_sm = NULL;
+EXPORT_SYMBOL(vplic_sm);
 void *claim_mmio = NULL;
 EXPORT_SYMBOL(claim_mmio);
 int test_vplic_irq = 0;
@@ -244,11 +245,10 @@ asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
 {
 	struct pt_regs *old_regs;
 
-    if (test_vplic && (regs->cause & ~CAUSE_IRQ_FLAG) == RV_IRQ_EXT &&
-            readl(claim_mmio) == test_vplic_irq) {
+    if (test_vplic && (regs->cause & ~CAUSE_IRQ_FLAG) == RV_IRQ_SOFT) {
         smp_wmb();
         vplic_sm[0] = ++test_vplic_num;
-        writel(test_vplic_irq, claim_mmio);
+        clrvipi0(1 << (rdvcpuid() + 1));
         csr_write(CSR_SIP, 0);
         //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0, vplic_sm[0], 0xdead, 0, 0, 0, 0);
         smp_wmb();

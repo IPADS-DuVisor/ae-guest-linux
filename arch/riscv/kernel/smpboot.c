@@ -172,8 +172,8 @@ asmlinkage __visible void smp_callin(void)
 
 #ifdef CONFIG_VIPI
     wrvcpuid(curr_cpuid + 1);
-    sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
-            __LINE__, rdvcpuid(), curr_cpuid, 0, 0, 0);
+    //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0,
+    //        __LINE__, rdvcpuid(), curr_cpuid, 0, 0, 0);
 #endif
 	/*
 	 * Remote TLB flushes are ignored while the CPU is offline, so emit
