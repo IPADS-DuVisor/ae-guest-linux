@@ -284,6 +284,8 @@ static int plic_starting_cpu(unsigned int cpu)
 	return 0;
 }
 
+extern void *claim_mmio;
+extern int *vplic_sm;
 #define VINTERRUPTS_IRQ_OFFSET 10
 static int __init plic_init(struct device_node *node,
 		struct device_node *parent)
@@ -371,6 +373,11 @@ static int __init plic_init(struct device_node *node,
 		handler->present = true;
 		handler->hart_base =
 			priv->regs + CONTEXT_BASE + i * CONTEXT_PER_HART;
+        claim_mmio = handler->hart_base + CONTEXT_CLAIM;
+        vplic_sm = ioremap(0xe000000, PAGE_SIZE);
+        vplic_sm[0] = 0xdead;
+        pr_err("%s:%d claim_mmio %px *vplic_sm %x\n", __func__, __LINE__,
+                claim_mmio, vplic_sm[0]);
 		raw_spin_lock_init(&handler->enable_lock);
 		handler->enable_base =
 			priv->regs + ENABLE_BASE + i * ENABLE_PER_HART;

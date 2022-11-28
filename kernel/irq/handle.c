@@ -224,6 +224,17 @@ int __init set_handle_irq(void (*handle_irq)(struct pt_regs *))
 	return 0;
 }
 
+bool test_vplic = false;
+EXPORT_SYMBOL(test_vplic);
+volatile unsigned long test_vplic_num = 0;
+EXPORT_SYMBOL(test_vplic_num);
+int *vplic_sm = NULL;
+void *claim_mmio = NULL;
+EXPORT_SYMBOL(claim_mmio);
+int test_vplic_irq = 0;
+EXPORT_SYMBOL(test_vplic_irq);
+
+#include <asm/sbi.h>
 /**
  * generic_handle_arch_irq - root irq handler for architectures which do no
  *                           entry accounting themselves
@@ -232,6 +243,18 @@ int __init set_handle_irq(void (*handle_irq)(struct pt_regs *))
 asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
 {
 	struct pt_regs *old_regs;
+
+    if (test_vplic && (regs->cause & ~CAUSE_IRQ_FLAG) == RV_IRQ_EXT &&
+            readl(claim_mmio) == test_vplic_irq) {
+        smp_wmb();
+        vplic_sm[0] = ++test_vplic_num;
+        writel(test_vplic_irq, claim_mmio);
+        csr_write(CSR_SIP, 0);
+        //sbi_ecall(SBI_EXT_0_1_SEND_IPI, 0, vplic_sm[0], 0xdead, 0, 0, 0, 0);
+        smp_wmb();
+        vplic_sm[1] = test_vplic_num;
+        return;
+    }
 
 	irq_enter();
 	old_regs = set_irq_regs(regs);
