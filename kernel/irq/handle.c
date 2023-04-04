@@ -249,14 +249,7 @@ asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
         smp_wmb();
         vplic_sm[0] = ++test_vplic_num;
         clrvipi0(1 << rdvcpuid());
-        //clrvipi0(1 << (rdvcpuid() + 1));
         csr_write(CSR_SIP, 0);
-        //sbi_ecall(0xC200004, 0, __LINE__, 0xdead,
-        //    rdvcpuid(), rdvipi0(), 0, 0);
-        //sbi_ecall(0xC200004, 0, __LINE__, 0xdeae,
-        //    vplic_sm[0], vplic_sm[1], 0, 0);
-        //smp_wmb();
-        //vplic_sm[1] = test_vplic_num;
         return;
     }
 
