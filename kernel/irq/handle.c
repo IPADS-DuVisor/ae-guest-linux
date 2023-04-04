@@ -245,10 +245,11 @@ asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
 {
 	struct pt_regs *old_regs;
 
-    if (test_vplic && (regs->cause & ~CAUSE_IRQ_FLAG) == RV_IRQ_SOFT) {
+    if (test_vplic && (regs->cause & ~CAUSE_IRQ_FLAG) == RV_IRQ_EXT &&
+            readl(claim_mmio) == test_vplic_irq) {
         smp_wmb();
         vplic_sm[0] = ++test_vplic_num;
-        clrvipi0(1 << rdvcpuid());
+        writel(test_vplic_irq, claim_mmio);
         csr_write(CSR_SIP, 0);
         return;
     }
