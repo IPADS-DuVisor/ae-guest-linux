@@ -102,7 +102,7 @@ static irqreturn_t vp_vring_interrupt(int irq, void *opaque)
 	return ret;
 }
 
-#define PCI_ISR_SM
+//#define PCI_ISR_SM
 
 #ifdef PCI_ISR_SM
 uint8_t *pci_isr_sm = NULL;
